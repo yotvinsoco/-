@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Signal</title>
+
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: black;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+        font-family: monospace;
+    }
+
+    #screen {
+        display: grid;
+        width: 100vw;
+        height: 100vh;
+        color: yellow;
+        font-size: 1.2vw;
+        line-height: 1vw;
+        user-select: none;
+    }
+
+    .cell {
+        text-align: center;
+    }
+
+    .bold {
+        font-weight: 900;
+    }
+
+    /* CREDITS */
+
+    #creditsContainer {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: none;
+        background: black;
+        color: yellow;
+    }
+
+    #credits {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        font-size: 1.6vw;
+        white-space: pre-line;
+        animation: scrollCredits 60s linear forwards; /* 1 minute */
+    }
+
+    @keyframes scrollCredits {
+        from {
+            transform: translateY(100%);
+        }
+        to {
+            transform: translateY(-120%);
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div id="screen"></div>
+
+<div id="creditsContainer">
+<div id="credits">
+Создано Йотвин
+
+При участии:
+LSE
+Diffin
+Safo
+Yoko
+Erlen
+Olso
+
+Передача завершена.
+Источник не найден.
+Система отключена.
+
+Наблюдение продолжается.
+</div>
+</div>
+
+<script>
+const russianChars = [
+"А","Б","В","Г","Д","Е","Ж","З","И","Й",
+"К","Л","М","Н","О","П","Р","С","Т","У",
+"Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"
+];
+
+const words = ["HELP","SOS","SAVE","WAKE","RUN"];
+let currentWord = "";
+let letterIndex = 0;
+let cells = [];
+
+let randomInterval;
+let wordInterval;
+
+let clickCount = 0;
+let stopped = false;
+
+const screen = document.getElementById("screen");
+const creditsContainer = document.getElementById("creditsContainer");
+
+function createGrid() {
+    screen.innerHTML = "";
+    cells = [];
+
+    const cols = Math.floor(window.innerWidth / 14);
+    const rows = Math.floor(window.innerHeight / 18);
+
+    screen.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    screen.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+    for (let i = 0; i < cols * rows; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        screen.appendChild(cell);
+        cells.push(cell);
+    }
+}
+
+createGrid();
+window.addEventListener("resize", createGrid);
+
+function startAnimation() {
+
+    randomInterval = setInterval(() => {
+        cells.forEach(cell => {
+            if (!cell.classList.contains("bold")) {
+                const rand = Math.floor(Math.random() * russianChars.length);
+                cell.textContent = russianChars[rand];
+            }
+        });
+    }, 100);
+
+    wordInterval = setInterval(() => {
+
+        if (currentWord === "") {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            letterIndex = 0;
+        }
+
+        const randomCellIndex = Math.floor(Math.random() * cells.length);
+        const targetCell = cells[randomCellIndex];
+
+        targetCell.textContent = currentWord[letterIndex];
+        targetCell.classList.add("bold");
+
+        setTimeout(() => {
+            targetCell.classList.remove("bold");
+        }, 3000);
+
+        letterIndex++;
+
+        if (letterIndex >= currentWord.length) {
+            currentWord = "";
+        }
+
+    }, 4000);
+}
+
+startAnimation();
+
+// 10 clics gauche = crédits
+document.addEventListener("click", (event) => {
+
+    if (stopped) return;
+
+    if (event.button === 0) {
+        clickCount++;
+    }
+
+    if (clickCount >= 10) {
+        stopped = true;
+
+        clearInterval(randomInterval);
+        clearInterval(wordInterval);
+
+        screen.style.display = "none";
+        creditsContainer.style.display = "block";
+    }
+});
+</script>
+
+</body>
+</html>
